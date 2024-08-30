@@ -5,16 +5,15 @@ const bookSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  
   email: {
     type: String,
     required: true,
   },
-  service: {
+  languageclass: {
     type: String,
     required: true,
   },
-  budget: {
+  time: {
     type: String,
     required: true,
   },
