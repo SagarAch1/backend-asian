@@ -45,6 +45,7 @@ app.use("/api/reviews", require("./routes/ReviewRoutes"));
 app.use("/api/slider", require("./routes/sliderRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/api/book", require("./routes/bookRoutes"));
+app.use("/api/form", require("./routes/formRoutes"));
 
 
 // Error handling middleware
