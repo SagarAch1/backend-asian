@@ -7,7 +7,7 @@ const connectDatabase = require("./database/database");
 dotenv.config();
 connectDatabase();
 
-const PORT = process.env.PORT || 5000; 
+const PORT = process.env.PORT || 5000;
 
 const app = express();
 
@@ -16,9 +16,9 @@ app.use(express.static("./public"));
 app.use(express.json());
 
 const corsOptions = {
-  origin:  'http://localhost:3000',
+  origin: ['http://localhost:3000', 'http://10.0.10.120:3000'],
   credentials: true,
-  optionSuccessStatus: 200,
+  optionsSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));
@@ -26,6 +26,7 @@ app.use(cors(corsOptions));
 app.get("/test", (req, res) => {
   res.send("Test API is Working");
 });
+
 app.post("/api/payment/verify-payment", (req, res) => {
   const { token, amount } = req.body;
   // Verify payment with Khalti API here
@@ -46,7 +47,6 @@ app.use("/api/slider", require("./routes/sliderRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
 app.use("/api/book", require("./routes/bookRoutes"));
 app.use("/api/form", require("./routes/formRoutes"));
-
 
 // Error handling middleware
 app.use((err, req, res, next) => {
