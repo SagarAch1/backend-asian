@@ -16,7 +16,7 @@ app.use(express.static("./public"));
 app.use(express.json());
 
 const corsOptions = {
-  origin: ['http://localhost:3000', 'http://10.0.10.120:3000'],
+  origin: ['http://localhost:3000', 'http://10.0.10.75:3000','http://192.168.56.1:3000'],
   credentials: true,
   optionsSuccessStatus: 200,
 };
@@ -54,6 +54,7 @@ app.use((err, req, res, next) => {
   res.status(500).send("Something went wrong!");
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server is running on port ${PORT}`);
 });
+

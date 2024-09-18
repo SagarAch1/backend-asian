@@ -9,7 +9,15 @@ const bookSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  phone: {
+    type: String,
+    required: true,
+  },
   languageclass: {
+    type: String,
+    required: true,
+  },
+  payment: {
     type: String,
     required: true,
   },
