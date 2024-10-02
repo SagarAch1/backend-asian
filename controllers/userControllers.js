@@ -26,6 +26,7 @@ const createUser = async (req, res) => {
         message: "User Already Exists",
       });
     }
+    
 
     const randomSalt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, randomSalt);
