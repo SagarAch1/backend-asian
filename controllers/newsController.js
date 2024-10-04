@@ -1,9 +1,18 @@
 const path = require("path");
-const fs = require("fs");
+const fs = require("fs").promises; // Use promises for file handling
 const News = require("../models/newsModel");
 
+// Helper function to delete image file
+const deleteImage = async (imagePath) => {
+  try {
+    await fs.unlink(imagePath);
+  } catch (err) {
+    console.error(`Failed to delete image at ${imagePath}:`, err.message);
+  }
+};
+
 const createNews = async (req, res) => {
-  const { newsName, newsLink, newsDate } = req.body; // Include newsDate
+  const { newsName, newsLink, newsDate } = req.body;
 
   if (!newsName || !newsLink || !newsDate) {
     return res.status(400).json({
@@ -24,7 +33,7 @@ const createNews = async (req, res) => {
   const imageUploadPath = path.join(__dirname, `../public/news/${imageName}`);
 
   try {
-    await newsImage.mv(imageUploadPath); // Handle potential errors during file move
+    await newsImage.mv(imageUploadPath);
 
     const newNews = new News({
       newsName,
@@ -41,7 +50,7 @@ const createNews = async (req, res) => {
       data: news,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).json({
       success: false,
       message: "Internal server error while creating news!",
@@ -51,25 +60,34 @@ const createNews = async (req, res) => {
 };
 
 const getAllNews = async (req, res) => {
-  try {
-    const allNews = await News.find({});
-    res.status(200).json({
-      success: true,
-      message: "All news fetched successfully!",
-      news: allNews,
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error while fetching news!",
-      error: error.message,
-    });
-  }
-};
+    console.log("Fetching all news..."); // Log to verify the function is called
+    try {
+      const allNews = await News.find({});
+      res.status(200).json({
+        success: true,
+        message: "All news fetched successfully!",
+        news: allNews,
+      });
+    } catch (error) {
+      console.log(error);
+      return res.status(500).json({
+        success: false,
+        message: "Internal server error while fetching news!",
+        error: error.message,
+      });
+    }
+  };
 
 const getSingleNews = async (req, res) => {
   const newsId = req.params.id;
+
+  // Validate ObjectId
+  if (!mongoose.Types.ObjectId.isValid(newsId)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid news ID!",
+    });
+  }
 
   try {
     const news = await News.findById(newsId);
@@ -85,7 +103,7 @@ const getSingleNews = async (req, res) => {
       news,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).json({
       success: false,
       message: "Internal server error while fetching the news!",
@@ -95,8 +113,18 @@ const getSingleNews = async (req, res) => {
 };
 
 const deleteNews = async (req, res) => {
+  const newsId = req.params.id;
+
+  // Validate ObjectId
+  if (!mongoose.Types.ObjectId.isValid(newsId)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid news ID!",
+    });
+  }
+
   try {
-    const news = await News.findByIdAndDelete(req.params.id);
+    const news = await News.findByIdAndDelete(newsId);
     if (!news) {
       return res.status(404).json({
         success: false,
@@ -105,18 +133,15 @@ const deleteNews = async (req, res) => {
     }
 
     const oldImagePath = path.join(__dirname, `../public/news/${news.newsImage}`);
-    fs.unlink(oldImagePath, (err) => {
-      if (err) {
-        console.error("Failed to delete old image:", err);
-      }
-    });
+    await deleteImage(oldImagePath);
 
     return res.status(200).json({
       success: true,
       message: "News deleted successfully!",
+      deletedNews: news,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).json({
       success: false,
       message: "Internal server error while deleting news!",
@@ -126,28 +151,35 @@ const deleteNews = async (req, res) => {
 };
 
 const updateNews = async (req, res) => {
+  const newsId = req.params.id;
+
+  // Validate ObjectId
+  if (!mongoose.Types.ObjectId.isValid(newsId)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid news ID!",
+    });
+  }
+
   try {
+    // Handle image update
     if (req.files && req.files.newsImage) {
       const { newsImage } = req.files;
       const imageName = `${Date.now()}-${newsImage.name}`;
       const imageUploadPath = path.join(__dirname, `../public/news/${imageName}`);
 
       await newsImage.mv(imageUploadPath);
-
       req.body.newsImage = imageName;
 
-      const existingNews = await News.findById(req.params.id);
+      // Delete old image
+      const existingNews = await News.findById(newsId);
       if (existingNews) {
         const oldImagePath = path.join(__dirname, `../public/news/${existingNews.newsImage}`);
-        fs.unlink(oldImagePath, (err) => {
-          if (err) {
-            console.error("Failed to delete old image:", err);
-          }
-        });
+        await deleteImage(oldImagePath);
       }
     }
 
-    const updatedNews = await News.findByIdAndUpdate(req.params.id, req.body, {
+    const updatedNews = await News.findByIdAndUpdate(newsId, req.body, {
       new: true,
     });
 
@@ -157,7 +189,7 @@ const updateNews = async (req, res) => {
       data: updatedNews,
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return res.status(500).json({
       success: false,
       message: "Internal server error while updating news!",
