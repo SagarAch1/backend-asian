@@ -12,27 +12,32 @@ const createGallery = async (req, res) => {
     });
   }
 
-  if (!req.files || !req.files.galleryImage) {
+  if (!req.files || !req.files.galleryImages) {
     return res.status(400).json({
       success: false,
-      message: "Please upload an image of the gallery",
+      message: "Please upload images for the gallery",
     });
   }
 
-  const { galleryImage } = req.files;
-  const imageName = `${Date.now()}-${galleryImage.name}`;
-  const imageUploadPath = path.join(
-    __dirname,
-    `../public/gallery/${imageName}`
-  );
-
   try {
-    await galleryImage.mv(imageUploadPath);
+    const galleryImages = [];
+
+    // Handle multiple file uploads
+    const imageFiles = req.files.galleryImages;
+    const files = Array.isArray(imageFiles) ? imageFiles : [imageFiles]; // Handle single and multiple files
+
+    // Upload each image
+    for (const image of files) {
+      const imageName = `${Date.now()}-${image.name}`;
+      const imageUploadPath = path.join(__dirname, `../public/gallery/${imageName}`);
+      await image.mv(imageUploadPath);
+      galleryImages.push(imageName); // Store the uploaded image name
+    }
 
     const newGallery = new Gallery({
       galleryName,
       galleryType,
-      galleryImages: imageName,
+      galleryImages,
     });
 
     const gallery = await newGallery.save();
@@ -57,7 +62,7 @@ const getAllGallery = async (req, res) => {
     const allGallery = await Gallery.find({});
     res.status(200).json({
       success: true,
-      message: "All gallery fetched successfully!",
+      message: "All galleries fetched successfully!",
       gallery: allGallery,
     });
   } catch (error) {
@@ -106,11 +111,13 @@ const deleteGallery = async (req, res) => {
       });
     }
 
-    const oldImagePath = path.join(
-      __dirname,
-      `../public/gallery/${gallery.galleryImage}`
-    );
-    fs.unlinkSync(oldImagePath);
+    // Delete all images related to the gallery
+    gallery.galleryImages.forEach((image) => {
+      const oldImagePath = path.join(__dirname, `../public/gallery/${image}`);
+      if (fs.existsSync(oldImagePath)) {
+        fs.unlinkSync(oldImagePath);
+      }
+    });
 
     return res.status(200).json({
       success: true,
@@ -128,31 +135,43 @@ const deleteGallery = async (req, res) => {
 
 const updateGallery = async (req, res) => {
   try {
-    if (req.files && req.files.galleryImage) {
-      const { galleryImage } = req.files;
-      const imageName = `${Date.now()}-${galleryImage.name}`;
-      const imageUploadPath = path.join(
-        __dirname,
-        `../public/gallery/${imageName}`
-      );
-
-      await galleryImage.mv(imageUploadPath);
-
-      req.body.galleryImage = imageName;
-
-      const existingGallery = await Gallery.findById(req.params.id);
-      const oldImagePath = path.join(
-        __dirname,
-        `../public/gallery/${existingGallery.galleryImage}`
-      );
-      fs.unlinkSync(oldImagePath);
+    const gallery = await Gallery.findById(req.params.id);
+    if (!gallery) {
+      return res.status(404).json({
+        success: false,
+        message: "Gallery not found!",
+      });
     }
 
-    const updatedGallery = await Gallery.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true }
-    );
+    if (req.files && req.files.galleryImages) {
+      const galleryImages = [];
+
+      // Handle multiple file uploads
+      const imageFiles = req.files.galleryImages;
+      const files = Array.isArray(imageFiles) ? imageFiles : [imageFiles];
+
+      // Upload new images and delete old ones
+      files.forEach(async (image) => {
+        const imageName = `${Date.now()}-${image.name}`;
+        const imageUploadPath = path.join(__dirname, `../public/gallery/${imageName}`);
+        await image.mv(imageUploadPath);
+        galleryImages.push(imageName);
+      });
+
+      // Delete old images
+      gallery.galleryImages.forEach((image) => {
+        const oldImagePath = path.join(__dirname, `../public/gallery/${image}`);
+        if (fs.existsSync(oldImagePath)) {
+          fs.unlinkSync(oldImagePath);
+        }
+      });
+
+      req.body.galleryImages = galleryImages;
+    }
+
+    const updatedGallery = await Gallery.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+    });
 
     res.status(200).json({
       success: true,
