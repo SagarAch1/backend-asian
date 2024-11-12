@@ -31,22 +31,11 @@ app.get("/test", (req, res) => {
   res.send("Test API is Working");
 });
 
-app.post("/api/payment/verify-payment", (req, res) => {
-  const { token, amount } = req.body;
-  // Verify payment with Khalti API here
-  // Respond with appropriate status and data
-  res.status(200).json({ message: "Payment verified successfully" });
-});
-
 // Define routes
 app.use("/api/user", require("./routes/userRoutes"));
-app.use("/api/product", require("./routes/productRoutes"));
 
 app.use("/api/contact", require("./routes/contactRoutes"));
-app.use("/api/cart", require("./routes/cartRoutes"));
-app.use("/api/item", require("./routes/itemRoutes"));
-app.use("/api/order", require("./routes/orderRoutes"));
-app.use("/api/reviews", require("./routes/ReviewRoutes"));
+
 app.use("/api/slider", require("./routes/sliderRoutes"));
 app.use("/api/event", require("./routes/eventRoutes"));
 app.use("/api/admin", require("./routes/adminRoutes"));
@@ -54,8 +43,6 @@ app.use("/api/book", require("./routes/bookRoutes"));
 app.use("/api/form", require("./routes/formRoutes"));
 app.use("/api/news", require("./routes/newsRoutes"));
 app.use("/api/gallery", require("./routes/galleryRoutes"));
-
-
 
 // Error handling middleware
 app.use((err, req, res, next) => {
