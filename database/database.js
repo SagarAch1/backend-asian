@@ -12,11 +12,10 @@ dotenv.config();
 // Make a unique function name
 // Export
 
-//Connecting to Database
 const connectDatabase = () => {
-  mongoose.connect(process.env.MONGODB_LOCAL).then(() => {
+  mongoose.connect(process.env.MONGODB_CLOUD).then(() => {
     console.log("Database Connected");
-  });
+  });
 };
 
 //Exporting the function
