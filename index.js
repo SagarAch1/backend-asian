@@ -16,8 +16,7 @@ app.use(express.static("./public"));
 app.use(express.json());
 
 const corsOptions = {
-  // origin: "*", // Allow all origins for localhost
-  origin: "https://asian.edu.np/", // Allow all origins for localhost
+  origin: "*", // Allow all origins
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed methods
   allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
   preflightContinue: true, // Pass the request to the next middleware
