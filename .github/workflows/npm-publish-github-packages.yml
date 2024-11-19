@@ -1,0 +1,61 @@
+name: Test and Deploy
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x,20.x]
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - name: npm install and test
+      run: |
+        npm install
+      env:
+        CI: true
+
+  deploy:
+    needs: [test]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+    - name: SSH and Deploy to Asian Api
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        script: |
+          set -e
+          cd ~/asian.edu.np/backend-asian
+          if [[ -n $(git status -s) ]]; then
+            git add .
+            git commit -m "local changes"
+          fi
+          git pull origin master
+          # Check if yarn is installed, if not use npm
+          if command -v yarn &> /dev/null; then
+            echo "Using Yarn to install dependencies"
+            yarn install
+          else
+            echo "Yarn not found, using npm to install dependencies"
+            npm install
+          fi
+          pm2 restart Api || pm2 start yarn --name "Api" -- start
+          echo "Deployment completed."
