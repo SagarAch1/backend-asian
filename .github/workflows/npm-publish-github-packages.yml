@@ -41,7 +41,7 @@ jobs:
         username: ${{ secrets.SSH_USERNAME }}
         key: ${{ secrets.SSH_KEY }}
         port: ${{ secrets.SSH_PORT }}
-        # timeout: 60  # Timeout in seconds
+        timeout: '60s'  # Timeout in seconds
         script: |
           set -e
           cd ~/asian.edu.np/backend-asian
