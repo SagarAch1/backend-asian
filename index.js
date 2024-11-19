@@ -20,6 +20,7 @@ const corsOptions = {
     "http://localhost:3000",
     "http://10.0.10.146 :3000",
     "http://192.168.56.1:3000",
+    "https://asian.edu.np/",
   ],
   credentials: true,
   optionsSuccessStatus: 200,
