@@ -16,17 +16,15 @@ app.use(express.static("./public"));
 app.use(express.json());
 
 const corsOptions = {
-  origin: [
-    "http://localhost:3000",
-    "http://10.0.10.146 :3000",
-    "http://192.168.56.1:3000",
-    "https://asian.edu.np/",
-  ],
-  credentials: true,
-  optionsSuccessStatus: 200,
-};
+  origin: "*", // Allow all origins
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allowed methods
+  allowedHeaders: ["Content-Type", "Authorization"], // Allowed headers
+  preflightContinue: true, // Pass the request to the next middleware
+  optionsSuccessStatus: 204, // Status code for successful preflight requests
+}
 
-app.use(cors(corsOptions));
+// Apply CORS middleware
+app.use(cors(corsOptions))
 
 app.get("/test", (req, res) => {
   res.send("Test API is Working");
