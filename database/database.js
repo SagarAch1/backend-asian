@@ -11,7 +11,7 @@ dotenv.config();
 // Functions (Connection)
 // Make a unique function name
 // Export
-const url='mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.3.2'
+const url='mongodb://asianAdmin:AdminAsian123321@localhost:27019/asian?authSource=admin'
 
 const connectDatabase = () => {
   mongoose.connect(url).then(() => {
