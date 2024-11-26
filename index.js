@@ -78,7 +78,7 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 // CORS configuration
 const corsOptions = {
-    origin: ["https://asian.edu.np"], // Allow both www and non-www
+    origin: ["https://asian.edu.np","http://localhost:3000"], // Allow both www and non-www
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: [
         "Content-Type",
