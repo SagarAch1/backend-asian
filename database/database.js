@@ -11,9 +11,10 @@ dotenv.config();
 // Functions (Connection)
 // Make a unique function name
 // Export
+const url= process.env.MONGODB_LOCAL
 
 const connectDatabase = () => {
-  mongoose.connect(process.env.MONGODB_CLOUD).then(() => {
+  mongoose.connect(url).then(() => {
     console.log("Database Connected");
   });
 };
