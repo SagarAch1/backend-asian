@@ -135,58 +135,49 @@ const deleteGallery = async (req, res) => {
 
 const updateGallery = async (req, res) => {
   try {
+    console.log("req",req.body)
     const gallery = await Gallery.findById(req.params.id);
     if (!gallery) {
-      return res.status(404).json({
-        success: false,
-        message: "Gallery not found!",
-      });
+      return res.status(404).json({ success: false, message: "Gallery not found!" });
     }
 
+    const { galleryName, galleryType } = req.body;
+    const existingImages = req.body.existingImages || []; // New field for existing images
+
+    // Log existing images before update
+    console.log("Existing images before update:", gallery.galleryImages);
+
+    // If existingImages doesn't match gallery.galleryImages, remove missing ones
+    gallery.galleryImages = existingImages;
+
+    // Handle uploading new images
     if (req.files && req.files.galleryImages) {
-      const galleryImages = [];
-
-      // Handle multiple file uploads
-      const imageFiles = req.files.galleryImages;
-      const files = Array.isArray(imageFiles) ? imageFiles : [imageFiles];
-
-      // Upload new images and delete old ones
-      files.forEach(async (image) => {
+      const imageFiles = Array.isArray(req.files.galleryImages) ? req.files.galleryImages : [req.files.galleryImages];
+      for (const image of imageFiles) {
         const imageName = `${Date.now()}-${image.name}`;
         const imageUploadPath = path.join(__dirname, `../public/gallery/${imageName}`);
         await image.mv(imageUploadPath);
-        galleryImages.push(imageName);
-      });
-
-      // Delete old images
-      gallery.galleryImages.forEach((image) => {
-        const oldImagePath = path.join(__dirname, `../public/gallery/${image}`);
-        if (fs.existsSync(oldImagePath)) {
-          fs.unlinkSync(oldImagePath);
-        }
-      });
-
-      req.body.galleryImages = galleryImages;
+        gallery.galleryImages.push(imageName); // Add new images to gallery
+      }
     }
 
-    const updatedGallery = await Gallery.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+    // Update gallery fields
+    gallery.galleryName = galleryName || gallery.galleryName;
+    gallery.galleryType = galleryType || gallery.galleryType;
 
-    res.status(200).json({
-      success: true,
-      message: "Gallery updated successfully!",
-      data: updatedGallery,
-    });
+    const updatedGallery = await gallery.save();
+
+    // Log updated gallery details
+    console.log("Updated gallery:", updatedGallery);
+
+    res.status(200).json({ success: true, message: "Gallery updated successfully!", data: updatedGallery });
   } catch (error) {
-    console.log(error);
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error!",
-      error: error.message,
-    });
+    console.error(error);
+    res.status(500).json({ success: false, message: "Internal server error!", error: error.message });
   }
 };
+
+
 
 module.exports = {
   createGallery,

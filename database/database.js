@@ -1,23 +1,23 @@
 // Importing mongoDB package
-const mongoose = require("mongoose");
+const mongoose = require("mongoose")
 
 // Importing dotenv package
-const dotenv = require("dotenv");
+const dotenv = require("dotenv")
 
 // Configuring dotenv
-dotenv.config();
+dotenv.config()
 
 // External File
 // Functions (Connection)
 // Make a unique function name
 // Export
-const url='mongodb://asianAdmin:AdminAsian123321@localhost:27019/asian?authSource=admin'
+const url = process.env.MONGODB_URL
 
 const connectDatabase = () => {
   mongoose.connect(url).then(() => {
-    console.log("Database Connected");
-  });
-};
+    console.log("Database Connected")
+  })
+}
 
 //Exporting the function
-module.exports = connectDatabase;
+module.exports = connectDatabase
